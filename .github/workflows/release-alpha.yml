@@ -2,6 +2,9 @@ name: release-alpha
 
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - RELEASE_ALPHA
 
 permissions:
   contents: write
