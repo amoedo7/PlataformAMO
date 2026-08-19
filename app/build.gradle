@@ -4,10 +4,14 @@ plugins {
 }
 
 def ciRunNumber = (System.getenv('GITHUB_RUN_NUMBER') ?: '1').toInteger()
-def appVersionCode = 904000 + ciRunNumber
-def appVersionName = "0.9.4-alpha.${ciRunNumber}"
-
-def devStore = file("${System.properties['user.home']}/.android/debug.keystore")
+def appVersionCode = 905000 + ciRunNumber
+def appVersionName = "0.9.5-security.${ciRunNumber}"
+def signingStoreFile = System.getenv('PLATAFORMAMO_KEYSTORE_PATH')
+def signingStorePassword = System.getenv('PLATAFORMAMO_STORE_PASSWORD')
+def signingKeyAlias = System.getenv('PLATAFORMAMO_KEY_ALIAS')
+def signingKeyPassword = System.getenv('PLATAFORMAMO_KEY_PASSWORD')
+def releaseSigningRequired = (System.getenv('CI_RELEASE_SIGNING_REQUIRED') ?: 'false').toBoolean()
+def hasReleaseSigning = [signingStoreFile, signingStorePassword, signingKeyAlias, signingKeyPassword].every { it != null && !it.trim().isEmpty() }
 
 android {
     namespace 'com.desarrollamo.plataformamo'
@@ -22,22 +26,25 @@ android {
     }
 
     signingConfigs {
-        dev {
-            storeFile devStore
-            storePassword 'android'
-            keyAlias 'androiddebugkey'
-            keyPassword 'android'
+        if (hasReleaseSigning) {
+            create('secureRelease') {
+                storeFile file(signingStoreFile)
+                storePassword signingStorePassword
+                keyAlias signingKeyAlias
+                keyPassword signingKeyPassword
+            }
         }
     }
 
     buildTypes {
         release {
-            signingConfig signingConfigs.dev
             minifyEnabled false
+            if (hasReleaseSigning) {
+                signingConfig signingConfigs.secureRelease
+            } else if (releaseSigningRequired) {
+                throw new GradleException('PlataformAMO signing secrets are required; signing material must never be committed to Git')
+            }
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-        debug {
-            signingConfig signingConfigs.dev
         }
     }
 

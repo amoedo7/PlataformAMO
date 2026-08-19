@@ -21,31 +21,57 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.7'
-      - name: Prepare alpha signing key
+
+      - name: Prepare secure signing key
+        env:
+          PLATAFORMAMO_SIGNING_KEY_B64: ${{ secrets.PLATAFORMAMO_SIGNING_KEY_B64 }}
+          PLATAFORMAMO_STORE_PASSWORD: ${{ secrets.PLATAFORMAMO_STORE_PASSWORD }}
+          PLATAFORMAMO_KEY_ALIAS: ${{ secrets.PLATAFORMAMO_KEY_ALIAS }}
+          PLATAFORMAMO_KEY_PASSWORD: ${{ secrets.PLATAFORMAMO_KEY_PASSWORD }}
         run: |
-          mkdir -p "$HOME/.android"
-          base64 -d ci/plataformamo-dev.keystore.b64 > "$HOME/.android/debug.keystore"
-          keytool -list -keystore "$HOME/.android/debug.keystore" -storepass android -alias androiddebugkey >/dev/null
+          set -euo pipefail
+          test -n "$PLATAFORMAMO_SIGNING_KEY_B64"
+          test -n "$PLATAFORMAMO_STORE_PASSWORD"
+          test -n "$PLATAFORMAMO_KEY_ALIAS"
+          test -n "$PLATAFORMAMO_KEY_PASSWORD"
+          printf '%s' "$PLATAFORMAMO_SIGNING_KEY_B64" | base64 -d > "$RUNNER_TEMP/plataformamo-release.jks"
+          chmod 600 "$RUNNER_TEMP/plataformamo-release.jks"
+          keytool -list \
+            -keystore "$RUNNER_TEMP/plataformamo-release.jks" \
+            -storepass "$PLATAFORMAMO_STORE_PASSWORD" \
+            -alias "$PLATAFORMAMO_KEY_ALIAS" >/dev/null
+
       - name: Build APK
+        env:
+          PLATAFORMAMO_KEYSTORE_PATH: ${{ runner.temp }}/plataformamo-release.jks
+          PLATAFORMAMO_STORE_PASSWORD: ${{ secrets.PLATAFORMAMO_STORE_PASSWORD }}
+          PLATAFORMAMO_KEY_ALIAS: ${{ secrets.PLATAFORMAMO_KEY_ALIAS }}
+          PLATAFORMAMO_KEY_PASSWORD: ${{ secrets.PLATAFORMAMO_KEY_PASSWORD }}
+          CI_RELEASE_SIGNING_REQUIRED: 'true'
         run: gradle assembleRelease --stacktrace
+
       - name: Prepare release assets
         id: meta
         run: |
-          VERSION="0.9.4-alpha.${GITHUB_RUN_NUMBER}"
+          set -euo pipefail
+          VERSION="0.9.5-security.${GITHUB_RUN_NUMBER}"
           TAG="v${VERSION}"
           SRC=$(find app/build/outputs/apk/release -name '*.apk' | head -n1)
           OUT="PlataformAMO-${VERSION}.apk"
           cp "$SRC" "$OUT"
           sha256sum "$OUT" > SHA256SUMS.txt
+          "$ANDROID_HOME/build-tools/34.0.0/apksigner" verify --print-certs "$OUT" | tee /tmp/signing.txt
+          sed -n 's/^Signer #1 certificate SHA-256 digest: /SIGNING_CERT_SHA256=/p' /tmp/signing.txt > SIGNING_CERT_SHA256.txt
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "apk=$OUT" >> "$GITHUB_OUTPUT"
+
       - name: Publish prerelease
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create "${{ steps.meta.outputs.tag }}" \
-            "${{ steps.meta.outputs.apk }}" SHA256SUMS.txt \
+            "${{ steps.meta.outputs.apk }}" SHA256SUMS.txt SIGNING_CERT_SHA256.txt \
             --title "PlataformAMO ${{ steps.meta.outputs.version }}" \
-            --notes "Primera distribución Android de PlataformAMO para pruebas a través de StoreAMO. Canal alpha; usa identidad de desarrollo separada de la futura firma estable." \
+            --notes "Security candidate de PlataformAMO: la firma se inyecta exclusivamente desde GitHub Actions Secrets. La clave dev previamente publicada no se reutiliza como identidad segura." \
             --prerelease
