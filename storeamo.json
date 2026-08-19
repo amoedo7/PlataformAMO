@@ -1,0 +1,35 @@
+{
+  "schema": "storeamo.app.v1",
+  "id": "plataformamo",
+  "name": "PlataformAMO",
+  "tagline": "El espacio de trabajo de DesarrollAMO.",
+  "description": "Acceso Android al entorno compartido de PlataformAMO, conectado a la plataforma web oficial y preparado para distribuirse y actualizarse desde StoreAMO.",
+  "category": "Equipo",
+  "audience": "team",
+  "featured": true,
+  "status": "candidate",
+  "supported_platforms": ["android", "web"],
+  "store": {
+    "homepage": "https://plataforma.desarrollamo.com.ar",
+    "screenshots": [],
+    "notes": "Canal alpha Android. La web oficial sigue siendo la fuente funcional principal durante esta etapa."
+  },
+  "release": {
+    "provider": "github",
+    "repo": "amoedo7/PlataformAMO",
+    "channel": "beta",
+    "assets": [
+      {
+        "platform": "android",
+        "arch": "universal",
+        "format": "apk",
+        "pattern": "^PlataformAMO-.*\\.apk$",
+        "application_id": "com.desarrollamo.plataformamo.dev"
+      }
+    ]
+  },
+  "verification": {
+    "policy": "storeamo-default-v1",
+    "required_checks": ["integrity", "application-id", "signature", "https", "smoke-test"]
+  }
+}
