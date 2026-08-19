@@ -19,7 +19,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 
 class MainActivity : ComponentActivity() {
     private lateinit var webView: WebView
-    private lateinit var progress: ProgressBar
+    private lateinit var progressBar: ProgressBar
     private var fileCallback: ValueCallback<Array<Uri>>? = null
 
     private val filePicker = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -43,7 +43,7 @@ class MainActivity : ComponentActivity() {
         window.statusBarColor = Color.rgb(6, 16, 28)
         window.navigationBarColor = Color.rgb(6, 16, 28)
 
-        progress = ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal).apply {
+        progressBar = ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal).apply {
             max = 100
             progress = 0
             setBackgroundColor(Color.TRANSPARENT)
@@ -74,14 +74,14 @@ class MainActivity : ComponentActivity() {
                 }
 
                 override fun onPageFinished(view: WebView?, url: String?) {
-                    progress.visibility = View.GONE
+                    progressBar.visibility = View.GONE
                 }
             }
 
             webChromeClient = object : WebChromeClient() {
                 override fun onProgressChanged(view: WebView?, newProgress: Int) {
-                    progress.progress = newProgress
-                    progress.visibility = if (newProgress >= 100) View.GONE else View.VISIBLE
+                    progressBar.progress = newProgress
+                    progressBar.visibility = if (newProgress >= 100) View.GONE else View.VISIBLE
                 }
 
                 override fun onShowFileChooser(
@@ -109,7 +109,7 @@ class MainActivity : ComponentActivity() {
         val root = FrameLayout(this).apply {
             setBackgroundColor(Color.rgb(6, 16, 28))
             addView(webView, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT))
-            addView(progress, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, 6))
+            addView(progressBar, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, 6))
         }
         setContentView(root)
 
