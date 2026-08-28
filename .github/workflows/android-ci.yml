@@ -19,13 +19,8 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.7'
-      - name: Prepare alpha signing key
-        run: |
-          mkdir -p "$HOME/.android"
-          base64 -d ci/plataformamo-dev.keystore.b64 > "$HOME/.android/debug.keystore"
-          keytool -list -keystore "$HOME/.android/debug.keystore" -storepass android -alias androiddebugkey >/dev/null
-      - name: Build release APK
-        run: gradle assembleRelease --stacktrace
+      - name: Canonical AutoCheck
+        run: bash scripts/autocheck.sh
       - name: Upload APK
         uses: actions/upload-artifact@v6
         with:

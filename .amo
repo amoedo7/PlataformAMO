@@ -1,0 +1,60 @@
+{
+  "schema": "desarrollamo.amo.v1",
+  "amo_version": "1.0.0",
+  "id": "plataformamo",
+  "name": "PlataformAMO",
+  "kind": "workspace",
+  "origin": "legacy",
+  "membership": "candidate",
+  "trust": "inspected",
+  "unit": {
+    "purpose": "Proveer el espacio de trabajo humano de DesarrollAMO y su cliente Android alpha sin reemplazar la web oficial.",
+    "responsibility": "Mantener el cliente Android y su integración de distribución en estado verificable, preservando los límites de seguridad y la separación entre alpha y firma estable.",
+    "owner": "human_responsible",
+    "capabilities": ["workspace-ui", "android-client", "storeamo-candidate"]
+  },
+  "model": {
+    "inherits": [],
+    "context": ["README.md", "storeamo.json", "app", ".github/workflows/android-ci.yml", ".github/workflows/release-alpha.yml"],
+    "rules": [
+      "La web oficial sigue siendo la fuente operativa principal hasta una promoción explícita del cliente Android.",
+      "La identidad alpha no debe declararse ni reutilizarse como identidad estable de producción.",
+      "Una publicación o cambio de firma requiere gates externos de distribución y seguridad.",
+      "El contrato de salud debe ejecutar comprobaciones deterministas reales y no declarar PASS manualmente."
+    ]
+  },
+  "map": {
+    "parent": "raizamo",
+    "children": [],
+    "relations": [
+      {"type": "distributed-by", "target": "storeamo", "strength": "medium"}
+    ],
+    "covers": ["app/**", "storeamo.json", ".github/workflows/**"]
+  },
+  "policy": {
+    "cross_domain_changes_require_external_gates": true,
+    "self_declared_pass_allowed": false,
+    "signing_material_must_not_be_added_by_automejora": true
+  },
+  "provenance": {
+    "source_uri": "https://github.com/amoedo7/PlataformAMO",
+    "source_type": "git-repository",
+    "source_ref": "main"
+  },
+  "health": {
+    "checks": [
+      {
+        "id": "plataformamo-autocheck",
+        "type": "command",
+        "command": "bash scripts/autocheck.sh",
+        "cwd": ".",
+        "timeout_seconds": 600,
+        "description": "Valida contrato y metadatos, comprueba la identidad alpha versionada actual y construye el APK release con los mismos gates deterministas del CI existente."
+      }
+    ]
+  },
+  "evidence": {
+    "status": "inspected",
+    "refs": ["README.md", "storeamo.json", ".github/workflows/android-ci.yml", "scripts/autocheck.sh"]
+  }
+}
