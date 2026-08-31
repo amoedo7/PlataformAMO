@@ -15,7 +15,7 @@
   },
   "model": {
     "inherits": [],
-    "context": ["README.md", "storeamo.json", "app", ".github/workflows/android-ci.yml", ".github/workflows/release-alpha.yml"],
+    "context": ["README.md", "RECOVERY.md", "storeamo.json", "app", ".github/workflows/android-ci.yml", ".github/workflows/release-alpha.yml"],
     "rules": [
       "La web oficial sigue siendo la fuente operativa principal hasta una promoción explícita del cliente Android.",
       "La identidad alpha no debe declararse ni reutilizarse como identidad estable de producción.",
@@ -55,6 +55,6 @@
   },
   "evidence": {
     "status": "inspected",
-    "refs": ["README.md", "storeamo.json", ".github/workflows/android-ci.yml", "scripts/autocheck.sh"]
+    "refs": ["README.md", "RECOVERY.md", "storeamo.json", ".github/workflows/android-ci.yml", "scripts/autocheck.sh"]
   }
 }
